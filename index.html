@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Моя Мото Галерея</title>
     <style>
-        /* Общие стили для темной темы */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #0d1117;
@@ -16,14 +15,11 @@
             flex-direction: column;
             align-items: center;
         }
-
         h1 {
             color: #58a6ff;
             margin-bottom: 30px;
             font-weight: 600;
         }
-
-        /* Сетка для медиафайлов */
         .gallery {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -31,8 +27,6 @@
             width: 100%;
             max-width: 1200px;
         }
-
-        /* Контейнер карточки */
         .card {
             background-color: #161b22;
             border: 1px solid #30363d;
@@ -43,13 +37,10 @@
             cursor: pointer;
             position: relative;
         }
-
         .card:hover {
             transform: translateY(-5px);
             border-color: #58a6ff;
         }
-
-        /* Стили для изображений и видео в сетке */
         .card img, .card video {
             width: 100%;
             height: 250px;
@@ -57,8 +48,6 @@
             display: block;
             background-color: #0d1117;
         }
-
-        /* Иконка видео поверх карточки */
         .video-badge {
             position: absolute;
             top: 10px;
@@ -72,8 +61,6 @@
             border: 1px solid #30363d;
             z-index: 2;
         }
-
-        /* Стили модального окна (на весь экран) */
         .modal {
             display: none;
             position: fixed;
@@ -87,12 +74,9 @@
             align-items: center;
             overflow: hidden;
         }
-
         .modal.show {
             display: flex;
         }
-
-        /* Контейнер для зума и перетаскивания */
         .modal-wrapper {
             position: relative;
             width: 100%;
@@ -102,11 +86,9 @@
             align-items: center;
             cursor: grab;
         }
-
         .modal-wrapper:active {
             cursor: grabbing;
         }
-
         .modal-content {
             max-width: 90%;
             max-height: 90%;
@@ -118,12 +100,9 @@
             pointer-events: auto;
             display: none;
         }
-
         .modal-content.active {
             display: block;
         }
-
-        /* Кнопки управления вверху */
         .controls {
             position: absolute;
             top: 20px;
@@ -133,7 +112,6 @@
             align-items: center;
             z-index: 1010;
         }
-
         .btn {
             color: #fff;
             font-size: 30px;
@@ -150,28 +128,21 @@
             justify-content: center;
             align-items: center;
         }
-
         .btn:hover {
             color: #58a6ff;
             background: rgba(255, 255, 255, 0.2);
         }
-
         .btn:active {
             transform: scale(0.9);
         }
-
         .close-btn {
             font-size: 36px;
         }
     </style>
 </head>
 <body>
-
     <h1>Мото Галерея</h1>
-    
     <div class="gallery" id="motoGallery"></div>
-
-    <!-- Модальное окно -->
     <div class="modal" id="photoModal">
         <div class="controls">
             <button class="btn" id="zoomIn" title="Приблизить">+</button>
@@ -183,20 +154,15 @@
             <video class="modal-content" id="fullVideo" controls draggable="false"></video>
         </div>
     </div>
-
     <script>
-        // НАСТРОЙКИ: укажите общее количество медиафайлов в папке
         const totalImages = 5; 
-
         const galleryContainer = document.getElementById('motoGallery');
         const modal = document.getElementById('photoModal');
         const modalWrapper = document.getElementById('modalWrapper');
         const fullImage = document.getElementById('fullImage');
         const fullVideo = document.getElementById('fullVideo');
-        
         const zoomInBtn = document.getElementById('zoomIn');
         const zoomOutBtn = document.getElementById('zoomOut');
-
         let scale = 1;
         let isDragging = false;
         let startX, startY, translateX = 0, translateY = 0;
@@ -205,10 +171,8 @@
         function createMediaCard(index) {
             const card = document.createElement('div');
             card.className = 'card';
-
             const imgCheck = document.createElement('img');
             imgCheck.src = `${index}.jpg`;
-
             imgCheck.onerror = function() {
                 if (imgCheck.src.endsWith('.jpg')) {
                     imgCheck.src = `${index}.png`;
@@ -218,12 +182,9 @@
                     card.remove();
                 }
             };
-
             imgCheck.onload = function() {
                 card.appendChild(imgCheck);
-                card.addEventListener('click', () => {
-                    openModal(imgCheck.src, 'image');
-                });
+                card.addEventListener('click', () => openModal(imgCheck.src, 'image'));
                 galleryContainer.appendChild(card);
             };
         }
@@ -234,130 +195,49 @@
             video.muted = true;
             video.loop = true;
             video.playsInline = true;
-
             const badge = document.createElement('div');
             badge.className = 'video-badge';
             badge.innerText = 'MP4';
             card.appendChild(badge);
-
             card.addEventListener('mouseenter', () => video.play().catch(() => {}));
-            card.addEventListener('mouseleave', () => {
-                video.pause();
-                video.currentTime = 0;
-            });
-
-            video.onerror = function() {
-                card.remove();
-            };
-
+            card.addEventListener('mouseleave', () => { video.pause(); video.currentTime = 0; });
+            video.onerror = function() { card.remove(); };
             video.onloadeddata = function() {
                 card.appendChild(video);
-                card.addEventListener('click', () => {
-                    openModal(video.src, 'video');
-                });
+                card.addEventListener('click', () => openModal(video.src, 'video'));
                 galleryContainer.appendChild(card);
             };
         }
 
-        for (let i = 1; i <= totalImages; i++) {
-            createMediaCard(i);
-        }
+        for (let i = 1; i <= totalImages; i++) { createMediaCard(i); }
 
         function openModal(src, type) {
             resetZoom();
-            
             if (type === 'image') {
-                fullVideo.classList.remove('active');
-                fullVideo.pause();
-                fullVideo.src = '';
-                
-                fullImage.src = src;
-                fullImage.classList.add('active');
-                activeElement = fullImage;
+                fullVideo.classList.remove('active'); fullVideo.pause(); fullVideo.src = '';
+                fullImage.src = src; fullImage.classList.add('active'); activeElement = fullImage;
             } else if (type === 'video') {
-                fullImage.classList.remove('active');
-                fullImage.src = '';
-                
-                fullVideo.src = src;
-                fullVideo.classList.add('active');
-                activeElement = fullVideo;
+                fullImage.classList.remove('active'); fullImage.src = '';
+                fullVideo.src = src; fullVideo.classList.add('active'); activeElement = fullVideo;
                 fullVideo.play().catch(() => {});
             }
-
             modal.classList.add('show');
         }
 
-        function resetZoom() {
-            scale = 1;
-            translateX = 0;
-            translateY = 0;
-            updateTransform();
-        }
+        function resetZoom() { scale = 1; translateX = 0; translateY = 0; updateTransform(); }
+        function updateTransform() { if (activeElement) { activeElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`; } }
 
-        function updateTransform() {
-            if (activeElement) {
-                activeElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-            }
-        }
+        zoomInBtn.addEventListener('click', (e) => { e.stopPropagation(); if (scale < 5) { scale += 0.25; updateTransform(); } });
+        zoomOutBtn.addEventListener('click', (e) => { e.stopPropagation(); if (scale > 0.5) { scale -= 0.25; updateTransform(); } });
+        modal.addEventListener('click', (e) => { if (e.target.classList.contains('closeModal') || e.target === modalWrapper) { modal.classList.remove('show'); fullVideo.pause(); } });
 
-        zoomInBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (scale < 5) {
-                scale += 0.25;
-                updateTransform();
-            }
-        });
+        modalWrapper.addEventListener('mousedown', (e) => { if (e.target === activeElement || e.target === modalWrapper) { isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; } });
+        window.addEventListener('mousemove', (e) => { if (!isDragging) return; translateX = e.clientX - startX; translateY = e.clientY - startY; updateTransform(); });
+        window.addEventListener('mouseup', () => { isDragging = false; });
 
-        zoomOutBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (scale > 0.5) {
-                scale -= 0.25;
-                updateTransform();
-            }
-        });
-
-        modal.addEventListener('click', (e) => {
-            if (e.target.classList.contains('closeModal') || e.target === modalWrapper) {
-                modal.classList.remove('show');
-                fullVideo.pause();
-            }
-        });
-
-        modalWrapper.addEventListener('mousedown', (e) => {
-            if (e.target === activeElement || e.target === modalWrapper) {
-                isDragging = true;
-                startX = e.clientX - translateX;
-                startY = e.clientY - translateY;
-            }
-        });
-
-                window.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            translateX = e.clientX - startX;
-            translateY = e.clientY - startY;
-            updateTransform();
-        });
-
-        window.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
-
-        // Поддержка тач-скринов для мобильных
-        modalWrapper.addEventListener('touchstart', (e) => {
-            if (e.target === activeElement || e.target === modalWrapper) {
-                isDragging = true;
-                startX = e.touches[0].clientX - translateX;
-                startY = e.touches[0].clientY - translateY;
-            }
-        });
-
-        window.addEventListener('touchmove', (e) => {
-            if (!isDragging) return;
-            translateX = e.touches[0].clientX - startX;
-            translateY = e.touches[0].clientY - startY;
-            updateTransform();
-        });
-
-        window.addEventListener('touchend', () => {
-            isDragging = false;
-        });
+        modalWrapper.addEventListener('touchstart', (e) => { if (e.target === activeElement || e.target === modalWrapper) { isDragging = true; const t = e.touches[0]; startX = t.clientX - translateX; startY = t.clientY - translateY; } });
+        window.addEventListener('touchmove', (e) => { if (!isDragging) return; const t = e.touches[0]; translateX = t.clientX - startX; translateY = t.clientY - startY; updateTransform(); });
+        window.addEventListener('touchend', () => { isDragging = false; });
+    </script>
+</body>
+</html>
