@@ -155,7 +155,7 @@
         </div>
     </div>
     <script>
-        const totalImages = 5; 
+        const totalImages = 50; // Проверяем файлы с 1 по 50
         const galleryContainer = document.getElementById('motoGallery');
         const modal = document.getElementById('photoModal');
         const modalWrapper = document.getElementById('modalWrapper');
@@ -163,23 +163,19 @@
         const fullVideo = document.getElementById('fullVideo');
         const zoomInBtn = document.getElementById('zoomIn');
         const zoomOutBtn = document.getElementById('zoomOut');
-        let scale = 1;
-        let isDragging = false;
-        let startX, startY, translateX = 0, translateY = 0;
-        let activeElement = null;
+        let scale = 1, isDragging = false, startX, startY, translateX = 0, translateY = 0, activeElement = null;
 
         function createMediaCard(index) {
             const card = document.createElement('div');
             card.className = 'card';
             const imgCheck = document.createElement('img');
             imgCheck.src = `${index}.jpg`;
+            
             imgCheck.onerror = function() {
                 if (imgCheck.src.endsWith('.jpg')) {
                     imgCheck.src = `${index}.png`;
                 } else if (imgCheck.src.endsWith('.png')) {
                     setupVideoCard(card, index);
-                } else {
-                    card.remove();
                 }
             };
             imgCheck.onload = function() {
@@ -192,16 +188,12 @@
         function setupVideoCard(card, index) {
             const video = document.createElement('video');
             video.src = `${index}.mp4`;
-            video.muted = true;
-            video.loop = true;
-            video.playsInline = true;
+            video.muted = true; video.loop = true; video.playsInline = true;
             const badge = document.createElement('div');
-            badge.className = 'video-badge';
-            badge.innerText = 'MP4';
+            badge.className = 'video-badge'; badge.innerText = 'MP4';
             card.appendChild(badge);
             card.addEventListener('mouseenter', () => video.play().catch(() => {}));
             card.addEventListener('mouseleave', () => { video.pause(); video.currentTime = 0; });
-            video.onerror = function() { card.remove(); };
             video.onloadeddata = function() {
                 card.appendChild(video);
                 card.addEventListener('click', () => openModal(video.src, 'video'));
@@ -225,16 +217,13 @@
         }
 
         function resetZoom() { scale = 1; translateX = 0; translateY = 0; updateTransform(); }
-        function updateTransform() { if (activeElement) { activeElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`; } }
-
+        function updateTransform() { if (activeElement) activeElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`; }
         zoomInBtn.addEventListener('click', (e) => { e.stopPropagation(); if (scale < 5) { scale += 0.25; updateTransform(); } });
         zoomOutBtn.addEventListener('click', (e) => { e.stopPropagation(); if (scale > 0.5) { scale -= 0.25; updateTransform(); } });
         modal.addEventListener('click', (e) => { if (e.target.classList.contains('closeModal') || e.target === modalWrapper) { modal.classList.remove('show'); fullVideo.pause(); } });
-
         modalWrapper.addEventListener('mousedown', (e) => { if (e.target === activeElement || e.target === modalWrapper) { isDragging = true; startX = e.clientX - translateX; startY = e.clientY - translateY; } });
         window.addEventListener('mousemove', (e) => { if (!isDragging) return; translateX = e.clientX - startX; translateY = e.clientY - startY; updateTransform(); });
         window.addEventListener('mouseup', () => { isDragging = false; });
-
         modalWrapper.addEventListener('touchstart', (e) => { if (e.target === activeElement || e.target === modalWrapper) { isDragging = true; const t = e.touches[0]; startX = t.clientX - translateX; startY = t.clientY - translateY; } });
         window.addEventListener('touchmove', (e) => { if (!isDragging) return; const t = e.touches[0]; translateX = t.clientX - startX; translateY = t.clientY - startY; updateTransform(); });
         window.addEventListener('touchend', () => { isDragging = false; });
